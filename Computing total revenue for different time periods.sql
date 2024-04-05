@@ -449,3 +449,350 @@ category_id	category_name	total_revenue
 1	Beverages	267868.20
 8	Seafood	131261.77
 
+--------------------Time constraints in revenue reports------------------------
+SELECT
+  c.customer_id,
+  company_name,
+  SUM(amount) AS total_revenue 
+FROM orders o
+JOIN customers c
+  ON o.customer_id = c.customer_id
+WHERE o.order_date >= '2017-03-01' AND o.order_date < '2017-04-01'
+GROUP BY c.customer_id, company_name;
+The query above shows total revenue per customer,
+	but this time it's based on orders from March 2017. We've added a WHERE clause, 
+	inside which we defined the range for order_date. 
+	==========================================================================================
+	Note the date format that we used: YYYY-MM-DD. In other words, o.order_date >= '2017-03-01' means 'orders placed on March 1, 2017 or later'. 
+	Note that the month comes before the day in this date format – this might be counterintuitive for people from the US. 
+	The other condition that we used is o.order_date < '2017-04-01', which means "orders placed before April 1, 2017".
+=====================================================================================================
+Exercise
+Find the total_revenue (the sum of all amounts) from all orders placed in 2017.
+
+SELECT
+  SUM(amount) AS total_revenue 
+FROM orders o
+WHERE o.order_date >= '2017-01-01' AND o.order_date <= '2017-12-31'
+
+total_revenue
+617085.35
+
+------------------------------How to add interval to date-------------------------------------
+Perfect! When we wanted to find orders from March 2017, we used the following WHERE clause:
+
+WHERE o.order_date >= '2017-03-01' AND o.order_date < '2017-04-01'
+There is another way to write this query. Take a look:
+===============================================
+SELECT
+  c.customer_id,
+  company_name,
+  SUM(amount) AS total_revenue 
+FROM orders o
+JOIN customers c
+  ON o.customer_id = c.customer_id
+WHERE o.order_date >= '2017-03-01'
+  AND o.order_date < '2017-03-01'::DATE + INTERVAL '1' month
+GROUP BY c.customer_id, company_name;
+This time, instead of providing the specific end date, we used the INTERVAL keyword:
+
+date::DATE + INTERVAL 'number' interval
+where:
+interval – the interval we want to add, such as year, month or day.
+number – the amount of that interval to add.
+date – the date to be modified.
+	
+In our example, '2017-03-01'::DATE + INTERVAL '1' month means "add one month to March 1, 2017".
+
+Exercise
+The fiscal year in Northwind starts on September 1.
+
+For each customer, show the total revenue from orders placed in the fiscal year starting September 1, 2016. Show three columns: customer_id, company_name, and total_revenue.
+
+Use the INTERVAL keyword.
+SELECT
+  c.customer_id,
+  company_name,
+  SUM(amount) AS total_revenue 
+FROM orders o
+JOIN customers c
+  ON o.customer_id = c.customer_id
+WHERE o.order_date >= '2016-09-01'
+  AND o.order_date < '2016-09-01'::DATE + INTERVAL '1' year
+GROUP BY c.customer_id, company_name;
+
+customer_id	company_name	total_revenue
+ALFKI	Alfreds Futterkiste	814.50
+ANATR	Ana Trujillo Emparedados y helados	568.55
+ANTON	Antonio Moreno Taquería	5175.11
+AROUT	Around the Horn	3929.60
+BERGS	Berglunds snabbköp	9626.34
+BLAUS	Blauer See Delikatessen	1079.80
+BLONP	Blondesddsl père et fils	15968.08
+BOLID	Bólido Comidas preparadas	982.00
+BONAP	Bon app'	9263.48
+BOTTM	Bottom-Dollar Markets	6345.05
+BSBEV	B's Beverages	3179.50
+CACTU	Cactus Comidas para llevar	225.50
+CHOPS	Chop-suey Chinese	3431.80
+COMMI	Comércio Mineiro	1128.00
+CONSH	Consolidated Holdings	787.60
+DRACD	Drachenblut Delikatessen	533.60
+DUMON	Du monde entier	692.80
+EASTC	Eastern Connection	4809.35
+ERNSH	Ernst Handel	41748.74
+FAMIA	Familia Arquibaldo	3819.75
+FOLIG	Folies gourmandes	7363.90
+FOLKO	Folk och fä HB	7477.12
+FRANK	Frankenversand	10132.82
+FRANS	Franchi S.p.A.	49.80
+FURIB	Furia Bacalhau e Frutos do Mar	5081.24
+GALED	Galería del gastrónomo	629.20
+GODOS	Godos Cocina Típica	4576.15
+GOURL	Gourmet Lanchonetes	1020.00
+GREAL	Great Lakes Food Market	6673.71
+HANAR	Hanari Carnes	3481.52
+HILAA	HILARION-Abastos	12886.30
+HUNGC	Hungry Coyote Import Store	1362.20
+HUNGO	Hungry Owl All-Night Grocers	18959.31
+ISLAT	Island Trading	1890.10
+KOENE	Königlich Essen	6309.11
+LAMAI	La maison d'Asie	5445.53
+LAUGB	Laughing Bacchus Wine Cellars	335.50
+LAZYK	Lazy K Kountry Store	357.00
+LEHMS	Lehmanns Marktstand	11056.91
+LETSS	Let's Stop N Shop	317.75
+LILAS	LILA-Supermercado	8434.48
+LINOD	LINO-Delicateses	4704.05
+LONEP	Lonesome Pine Restaurant	1129.20
+MAGAA	Magazzini Alimentari Riuniti	3760.68
+MAISD	Maison Dewey	2380.00
+MEREP	Mère Paillarde	28233.70
+MORGK	Morgenstern Gesundkost	2147.40
+NORTS	North/South	352.00
+OCEAN	Océano Atlántico Ltda.	429.20
+OLDWO	Old World Delicatessen	6996.30
+OTTIK	Ottilies Käseladen	4176.28
+PERIC	Pericles Comidas clásicas	2746.20
+PICCO	Piccolo und mehr	16021.56
+PRINI	Princesa Isabel Vinhos	2411.04
+QUEDE	Que Delícia	3500.93
+QUEEN	Queen Cozinha	14693.32
+QUICK	QUICK-Stop	39108.18
+RANCH	Rancho grande	443.40
+RATTC	Rattlesnake Canyon Grocery	25424.93
+REGGC	Reggiani Caseifici	1221.94
+RICAR	Ricardo Adocicados	4633.28
+RICSU	Richter Supermarkt	3921.40
+ROMEY	Romero y tomillo	498.50
+SANTG	Santé Gourmet	1758.40
+SAVEA	Save-a-lot Markets	40452.00
+SEVES	Seven Seas Imports	10837.99
+SIMOB	Simons bistro	13072.20
+SPLIR	Split Rail Beer & Ale	8286.63
+SUPRD	Suprêmes délices	8818.28
+THEBI	The Big Cheese	336.00
+THECR	The Cracker Box	1393.24
+TOMSP	Toms Spezialitäten	2004.34
+TORTU	Tortuga Restaurante	7134.10
+TRADH	Tradição Hipermercados	1320.40
+TRAIH	Trail's Head Gourmet Provisioners	1333.30
+VAFFE	Vaffeljernet	5979.05
+VICTE	Victuailles en stock	5512.32
+VINET	Vins et alcools Chevalier	121.60
+WANDK	Die Wandernde Kuh	7079.55
+WARTH	Wartian Herkku	11089.70
+WELLI	Wellington Importadora	3222.14
+WHITC	White Clover Markets	6490.86
+WILMK	Wilman Kala	120.00
+WOLZA	Wolski Zajazd	1267.00
+
+How to add interval to date – exercise
+Good job! Let's do one more exercise with INTERVAL.
+
+Exercise
+The quarter is a period of three months – the first quarter (Q1) is a period of the first three months (January, February, March),
+	the second quarter (Q2) is a period of the second three months (April, May, June), etc. 
+	In the world of finance, the quarter is a very important time period and quarterly analyses are very common.
+
+Show the total revenue generated in the first quarter of 2018. Group revenue by each shipping country. Show two columns: ship_country and total_revenue. You can use the following code:
+
+'2018-01-01'::DATE + INTERVAL '3' month	
+
+select 
+	ship_country,
+    sum(amount) as total_revenue
+from orders
+join customers 
+using (customer_id)
+where order_date >= '2018-01-01'
+     and order_date <= '2018-01-01'::DATE + INTERVAL '3' month
+     group by ship_country
+
+ship_country	total_revenue
+Argentina	2275.70
+Austria	14786.40
+Belgium	9742.50
+Brazil	17196.94
+Canada	187.00
+Finland	1401.00
+France	9657.39
+Germany	44599.09
+Ireland	17035.79
+Italy	3188.90
+Mexico	2174.50
+Norway	3354.40
+Poland	587.50
+Spain	3901.46
+Sweden	7532.70
+UK	4607.50
+USA	44083.02
+Venezuela	7325.63
+
+Calculating the beginning of the current period
+Great! In analyzing revenue trends it is often important to calculate the beginning of the current period (e.g. the current day, month, year, etc.). 
+	This will help us create revenue reports for the current year, month, quarter, etc. 
+	In PostgreSQL there is a function named DATE_TRUNC(). Take a look:
+
+SELECT DATE_TRUNC('month', CURRENT_TIMESTAMP) AS current_month_start;
+The expression CURRENT_TIMESTAMP returns current timestamp, that is the current date and time.
+
+The DATE_TRUNC() function has two arguments:
+
+the text defining precision, e.g., 'minute', 'hour', 'day', 'month', 'quarter', or 'year'.
+the date that is to be rounded down with a precision defined in the first argument.
+The DATE_TRUNC() function returns a timestamp with unwanted details removed, e.g., the result of:
+
+SELECT DATE_TRUNC('day', '2019-09-09 12:31:08.5'::timestamp)
+is 2019-09-09 00:00:00.0 and the result of:
+
+SELECT DATE_TRUNC('year', '2018-07-10'::timestamp)
+is 2018-01-01 00:00:00.0.
+
+Exercise
+In a column named current_year_start, show the beginning of the current year using the function DATE_TRUNC().
+
+SELECT DATE_TRUNC('year', current_timestamp) as current_year_start
+
+current_year_start
+2024-01-01 00:00:00+00
+
+-----------------------------------Month-to-date revenue----------------------------------
+Good job! The last thing we'll show you in this part is how to do revenue reports for the current year, month, etc. 
+	They're another frequent financial report, and they show how much the company earned so far in the given current period. 
+	Commonly used report types are:
+
+year-to-date (YTD) – refers to the period beginning the first day of the current calendar year up to the current date.
+month-to-date (MTD) – refers to the period of time between the 1st of the current month and the current date.
+quarter-to-date (QTD) – refers to the period of time between the beginning of the current quarter and the current date.
+YTD, MTD, and QTD reports are used by business owners, investors, and individuals to analyze their revenue, income, business earnings, and investment returns for the current period of time.
+
+For example, if we want to show the month-to-date revenue:
+
+SELECT
+  c.customer_id,
+  company_name,
+  SUM(amount) AS total_revenue 
+FROM orders o
+JOIN customers c
+  ON o.customer_id = c.customer_id
+WHERE order_date >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+GROUP BY c.customer_id, company_name;
+If you look at the WHERE clause, you can see we used the technique we learned in the previous exercise to compute the beginning of the current month.
+
+Exercise
+Calculate the year-to-date revenue for each customer. Show two columns: customer_id and total_revenue.
+
+SELECT
+  c.customer_id,
+  SUM(amount) AS total_revenue 
+FROM orders o
+JOIN customers c
+  ON o.customer_id = c.customer_id
+WHERE order_date >= DATE_TRUNC('year', CURRENT_TIMESTAMP)
+GROUP BY c.customer_id
+customer_id	total_revenue
+QUEEN	2027.08
+RATTC	1255.72
+TORTU	360.00
+FRANS	266.00
+PERIC	300.00
+LEHMS	1629.98
+RICAR	1838.00
+HUNGO	1342.95
+BONAP	792.75
+DRACD	86.85
+SAVEA	4330.40
+ERNSH	5218.00
+REGGC	406.40
+GREAL	510.00
+SIMOB	232.09
+LILAS	673.92
+RICSU	498.10
+WHITC	928.75
+
+Month-to-date revenue – exercise
+Great! One more exercise!
+
+Exercise
+For each employee, find their quarter-to-date revenue. 
+	Show three columns: employee_id, last_name, and total_revenue. Use a DATE_TRUNC() function.
+SELECT
+  employee_id,
+  last_name,
+  SUM(amount) AS total_revenue 
+FROM employees
+JOIN orders
+  using (employee_id)
+WHERE order_date >= DATE_TRUNC('quarter', CURRENT_TIMESTAMP)
+GROUP BY employee_id
+employee_id	last_name	total_revenue
+4	Peacock	792.75
+2	Fuller	300.00
+7	King	232.09
+1	Davolio	1255.72
+8	Callahan	498.10
+
+
+---------------------------------Summary-------------------------------
+Perfect! That's it for this part of the course. Let's have a short summary before we continue.
+
+To find rows for three months starting from March 20, 2017, use:
+SELECT ... FROM ...
+WHERE column_name >= '2017-03-20'
+  AND column_name < '2017-03-20'::DATE + INTERVAL '3' month
+	
+To find rows for the current month, use:
+SELECT ... FROM ...
+WHERE column_name >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+	==================================================
+Exercise
+Show the total revenue for 2018 in a column named total_revenue.
+	
+	SELECT  SUM(amount) AS total_revenue
+FROM orders
+WHERE order_date >= '2018-01-01'
+  AND order_date < '2018-01-01'::DATE + INTERVAL '1' year
+
+total_revenue
+193637.42
+
+==============
+Exercise
+For each shipping country, find the month-to-date revenue. Show two columns: ship_country and total_revenue.
+	
+select 
+	ship_country,
+    sum(amount) as total_revenue
+from orders
+join customers 
+using (customer_id)
+where order_date >=DATE_trunc('month', CURRENT_TIMESTAMP)  
+                              group by ship_country
+ship_country	total_revenue
+USA	1255.72
+France	792.75
+Denmark	232.09
+Switzerland	498.10
+Mexico	300.00
+
