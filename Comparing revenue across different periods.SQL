@@ -933,7 +933,7 @@ order_id	amount	order_value
 
 -----------------------------------------------------------------------------------
 Creating columns with custom sums
-Perfect! Now, let's say we want to create two columns which show different order sums based on the ship_country column. 
+Perfect! Now, let's say we want to create two columns that show different order sums based on the ship_country column. 
 We can use the construction we've just learned, like so:
 
 SELECT
@@ -998,3 +998,254 @@ Exercise
 Show a revenue in quarters report similar to the one in the explanation. Instead of the revenue per quarter, show the average order amount per quarter.
 
 Order the rows by year.
+
+HINT: You will need two modifications:
+
+Change the SUM() function to the AVG() function.
+Remove the ELSE 0 part from all CASE WHEN instances. 
+Using zeroes for orders from other quarters would change the average value.
+
+SELECT
+	DATE_TRUNC('year', order_date) AS year,
+    AVG(CASE WHEN EXTRACT(quarter FROM order_date) = 1
+        THEN amount END) AS Q1,
+    AVG(CASE WHEN EXTRACT(quarter FROM order_date) = 2
+        THEN amount END) AS Q2,
+    AVG(CASE WHEN EXTRACT(quarter FROM order_date) = 3
+        THEN amount END) AS Q3,
+    AVG(CASE WHEN EXTRACT(quarter FROM order_date) = 4
+        THEN amount END) AS Q4
+FROM orders
+GROUP BY DATE_TRUNC('year', order_date)
+ORDER  BY DATE_TRUNC('year', order_date)
+
+year	q1	q2	q3	q4
+2016-01-01 00:00:00+00	null	null	1138.9797142857142857	1565.3098780487804878
+2017-01-01 00:00:00+00	1503.1407608695652174	1539.5383870967741935	1494.5420388349514563	1514.0125000000000000
+2018-01-01 00:00:00+00	1776.4900917431192661	null	null	null
+2020-01-01 00:00:00+00	null	1073.6487500000000000	879.5000000000000000	1037.3637500000000000
+2021-01-01 00:00:00+00	1211.4255555555555556	1662.4514285714285714	1159.1111111111111111	731.1970000000000000
+2022-01-01 00:00:00+00	2873.2027272727272727	2056.7530769230769231	1468.1972727272727273	1452.2830000000000000
+2023-01-01 00:00:00+00	1748.1475000000000000	3204.9291666666666667	763.8300000000000000	1387.3125000000000000
+2024-01-01 00:00:00+00	1107.7176923076923077	1382.7766666666666667	null	null
+
+================================================================================
+Creating a "revenue in quarters" report – exercise
+Great job! It's now your turn to create a "revenue in quarters" report!
+
+Exercise
+Create a "revenue in quarters" report showing the number of orders placed in each quarter of each year. The final report should look like this:
+
+year	Q1	Q2	Q3	Q4
+2016	0	0	70	82
+2017	92	93	103	120
+2018	182	88	0	0
+Order the rows by year.
+
+SELECT
+	DATE_TRUNC('year', order_date) AS year, 
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=1
+          THEN 1 END) AS Q1,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=2
+          THEN 1 END) AS Q2,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=3
+          THEN 1 END) AS Q3,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=4
+          THEN 1 END) AS Q4
+FROM ORDERS
+GROUP BY DATE_TRUNC('year', order_date)  
+ORDER BY DATE_TRUNC('year', order_date) 
+
+year	q1	q2	q3	q4
+2016-01-01 00:00:00+00	0	0	70	82
+2017-01-01 00:00:00+00	92	93	103	120
+2018-01-01 00:00:00+00	109	0	0	0
+2020-01-01 00:00:00+00	0	8	7	8
+2021-01-01 00:00:00+00	9	7	9	10
+2022-01-01 00:00:00+00	11	13	11	10
+2023-01-01 00:00:00+00	8	12	11	8
+2024-01-01 00:00:00+00	13	6	0	0
+------------alternate---------using extract instead of datetrunc --lookat date o/p-----
+SELECT
+	EXTRACT(YEAR FROM order_date) AS year,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=1
+          THEN 1 END) AS Q1,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=2
+          THEN 1 END) AS Q2,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=3
+          THEN 1 END) AS Q3,
+    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=4
+          THEN 1 END) AS Q4
+FROM ORDERS
+GROUP BY EXTRACT(YEAR FROM order_date)
+ORDER BY YEAR
+year	q1	q2	q3	q4
+2016	0	0	70	82
+2017	92	93	103	120
+2018	109	0	0	0
+2020	0	8	7	8
+2021	9	7	9	10
+2022	11	13	11	10
+2023	8	12	11	8
+2024	13	6	0	0
+--------------------------------------------------------------          
+---------------------------------------------------------------
+RECAP
+
+That's all we wanted to teach you in this part. 
+It's time to wrap things up! First, let's review what we've learned:
+
+1. To show the total revenue for each year, month or quarter, use DATE_TRUNC():
+SELECT
+  DATE_TRUNC('year', order_date) AS revenue_year,
+  SUM(amount) AS total_revenue 
+FROM orders
+GROUP BY DATE_TRUNC('year', order_date)
+ORDER BY DATE_TRUNC('year', order_date);
+
+2. To show the total revenue on all aggregation levels, add ROLLUP():
+...
+GROUP BY ROLLUP(
+  EXTRACT(year FROM order_date),
+  EXTRACT(quarter FROM order_date)
+)
+...
+
+3. To show the revenue from the previous year, use LAG():
+LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date))
+
+4. To calculate the difference between the current period and the previous period, use:
+SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)) AS delta
+
+5. To calculate the difference between the current period and the previous period as a percentage, use:
+ROUND(100 * (
+  (SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)))
+  / (LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)))::float
+  ), 2) AS delta_percentage
+
+6. To create a revenue in quarters report, use:
+SELECT
+  DATE_TRUNC('year', order_date) AS year, 
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1 THEN amount ELSE 0 END) AS Q1,
+  ...
+FROM orders
+GROUP BY DATE_TRUNC('year', order_date)
+ORDER BY DATE_TRUNC('year', order_date);
+-----------------------------------------------------------------------------
+------------------------------------------------------------------------------
+Question 1
+Okay, let's start with Question 1!
+
+Exercise
+Calculate the average order value for each month of 2017. Show two columns: revenue_month and avg_order_value.
+
+Order the rows by month.
+SELECT
+	DATE_TRUNC('month', order_date) as revenue_month,
+    avg(amount) as avg_order_value
+FROM orders
+WHERE EXTRACT(YEAR FROM order_date) = 2017
+GROUP BY DATE_TRUNC('month', order_date)
+ORDER BY DATE_TRUNC('month', order_date)
+
+revenue_month	avg_order_value
+2017-01-01 00:00:00+00	1856.3054545454545455
+2017-02-01 00:00:00+00	1327.0220689655172414
+2017-03-01 00:00:00+00	1284.9076666666666667
+2017-04-01 00:00:00+00	1710.7403225806451613
+2017-05-01 00:00:00+00	1680.6656250000000000
+2017-06-01 00:00:00+00	1212.0940000000000000
+2017-07-01 00:00:00+00	1546.0872727272727273
+2017-08-01 00:00:00+00	1432.9600000000000000
+2017-09-01 00:00:00+00	1503.4937837837837838
+2017-10-01 00:00:00+00	1756.5589473684210526
+2017-11-01 00:00:00+00	1280.4061764705882353
+2017-12-01 00:00:00+00	1487.4677083333333333
+
+Question 2
+Very good! Let's try the second question.
+
+Exercise
+For each month of the first half of 2017, calculate the total revenue and the revenue change 
+(delta) as compared to the previous month. Show three columns: revenue_month, total_revenue, 
+and delta.
+
+In the first row, leave the delta value as NULL. Order the results by month.
+
+SELECT
+	DATE_TRUNC('month', order_date) as revenue_month,
+    SUM(amount) as total_revenue,
+    SUM(amount) - LAG(SUM(amount),1) OVER(ORDER BY DATE_TRUNC('month', order_date)) AS delta
+FROM orders
+WHERE EXTRACT(YEAR FROM order_date) = 2017 AND
+	EXTRACT(MONTH FROM order_date) <=6
+GROUP BY DATE_TRUNC('month', order_date)
+ORDER BY DATE_TRUNC('month', order_date)
+
+-----------or WHERE order_date >= '2017-01-01'
+  AND order_date < '2017-07-01'---------------------------
+revenue_month	total_revenue	delta
+2017-01-01 00:00:00+00	61258.08	null
+2017-02-01 00:00:00+00	38483.64	-22774.44
+2017-03-01 00:00:00+00	38547.23	63.59
+2017-04-01 00:00:00+00	53032.95	14485.72
+2017-05-01 00:00:00+00	53781.30	748.35
+2017-06-01 00:00:00+00	36362.82	-17418.48
+
+================================================================
+Question 3
+Well done! Now, the final question.
+
+Exercise
+For all orders shipped to Germany, create a "revenue in quarters" report showing the total quarterly revenue in each year. The report should look like this:
+
+year	Q1	Q2	Q3	Q4
+2016-01-01 00:00:00+00	0	0	18975.67	16431.48
+2017-01-01 00:00:00+00	11929.90	42017.24	23575.24	39797.81
+2018-01-01 00:00:00+00	44599.09	0	0	0
+...	...	...	...	...
+Order the results by year.
+
+-------------GIVEN ANS ---------USES DATE_TRUNC----O/P IS 2016-01-01 --:00:00+00 ------- -------------------
+SELECT
+  DATE_TRUNC('year', order_date) AS year, 
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1 THEN amount ELSE 0 END) AS Q1,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 2 THEN amount ELSE 0 END) AS Q2,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 3 THEN amount ELSE 0 END) AS Q3,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 4 THEN amount ELSE 0 END) AS Q4
+FROM orders
+WHERE ship_country = 'Germany'
+GROUP BY YEAR
+ORDER BY YEAR
+
+year	q1	q2	q3	q4
+2016-01-01 00:00:00+00	0	0	18975.67	16431.48
+2017-01-01 00:00:00+00	11929.90	42017.24	23575.25	39797.81
+2018-01-01 00:00:00+00	44599.09	0	0	0
+2020-01-01 00:00:00+00	0	0	1174.75	3231.88
+2021-01-01 00:00:00+00	245.00	471.20	4261.00	910.40
+2022-01-01 00:00:00+00	0	2856.00	1197.95	3758.80
+2023-01-01 00:00:00+00	6938.64	3852.00	1485.80	858.00
+2024-01-01 00:00:00+00	1716.83	0	0	0
+
+----------------My ANS --------USING EXTRACT ---- O/P YR ONLY NUMBER--------          
+SELECT
+	EXTRACT(YEAR FROM order_date) as YEAR,
+    SUM(CASE WHEN EXTRACT(QUARTER FROM order_date) = 1 THEN amount END) AS Q1, 
+    SUM(CASE WHEN EXTRACT(QUARTER FROM order_date) = 2 THEN amount END) AS Q2, 
+    SUM(CASE WHEN EXTRACT(QUARTER FROM order_date) = 3 THEN amount END) AS Q3, 
+    SUM(CASE WHEN EXTRACT(QUARTER FROM order_date) = 4 THEN amount END) AS Q4
+FROM orders
+WHERE ship_country = 'Germany'
+GROUP BY YEAR
+ORDER BY YEAR
+
+year	q1	q2	q3	q4
+2016	null	null	18975.67	16431.48
+2017	11929.90	42017.24	23575.25	39797.81
+2018	44599.09	null	null	null
+2020	null	null	1174.75	3231.88
+2021	245.00	471.20	4261.00	910.40
+2022	null	2856.00	1197.95	3758.80
+2023	6938.64	3852.00	1485.80	858.00
+2024	1716.83	null	null	null
