@@ -649,12 +649,14 @@ UK	4607.50
 USA	44083.02
 Venezuela	7325.63
 
-Calculating the beginning of the current period
+------------------------------------------------------------------------------------------------
+	Calculating the beginning of the current period
 Great! In analyzing revenue trends it is often important to calculate the beginning of the current period (e.g. the current day, month, year, etc.). 
 	This will help us create revenue reports for the current year, month, quarter, etc. 
 	In PostgreSQL there is a function named DATE_TRUNC(). Take a look:
 
 SELECT DATE_TRUNC('month', CURRENT_TIMESTAMP) AS current_month_start;
+---------------------
 The expression CURRENT_TIMESTAMP returns current timestamp, that is the current date and time.
 
 The DATE_TRUNC() function has two arguments:
