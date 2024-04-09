@@ -1,3 +1,5 @@
+Part 2 
+
 In the previous part, we learned how to calculate the total revenue in a given period.
 Today, we're going to take a look at different ways to compare revenue values across different periods.
 
