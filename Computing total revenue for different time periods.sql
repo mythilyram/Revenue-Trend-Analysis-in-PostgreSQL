@@ -1,4 +1,4 @@
-
+Part 1
 Welcome
   
 Hello and welcome to our PostgreSQL Revenue Trend Analysis course!
