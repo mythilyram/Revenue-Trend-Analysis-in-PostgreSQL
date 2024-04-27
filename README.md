@@ -86,12 +86,54 @@ Comparing revenue across different periods
  		GROUP BY revenue_year
 		ORDER BY revenue_year;
   - Showing total revenue for each month and quarter
-  - 		Select
-  - 			DATE_TRUNC('month', order_date) AS month_in_2016,
+
+    		Select
+  			DATE_TRUNC('month', order_date) AS month_in_2016,
  			SUM()
 		FROM
-  - 		WHERE order_date >= '2016-01-01'   AND order_date < '2017-01-01'
-  - 		GROUP BY month_in_2016
-  - 		ORDER BY month_in_2016
+  		WHERE order_date >= '2016-01-01'   AND order_date < '2017-01-01'
+  		GROUP BY month_in_2016
+  		ORDER BY month_in_2016
+  			month_in_2016	total_revenue
+    			...		...
+    			2016-08-01 00:00:00+00	25485.28
+    			2016-09-01 00:00:00+00	26381.40
+    			2016-10-01 00:00:00+00	37515.73
+  - THe EXTRACT() function
+     
+    	SELECT
+    	  EXTRACT(year FROM order_date) AS revenue_year,
+    	  SUM(amount) AS total_revenue
+    	FROM orders
+    	GROUP BY EXTRACT(year FROM order_date)
+    	ORDER BY EXTRACT(year FROM order_date);
+			revenue_year	total_revenue
+			...		...
+    			2016	208083.98
+    			2017	617085.21
+    			2018	440623.90
+  -  To show the monthly revenue in each year we must use the EXTRACT() function twice.
 
+         SELECT
+    	  	EXTRACT(year FROM order_date) AS revenue_year,
+     		EXTRACT(month FROM order_date) AS revenue_month,
+    	  	SUM(amount) AS total_revenue
+    	 FROM orders
+    	 GROUP BY EXTRACT(year FROM order_date)
+    		EXTRACT(month FROM order_date)
+    	 ORDER BY EXTRACT(year FROM order_date)
+     		EXTRACT(month FROM order_date);
+			revenue_year	revenue_month	total_revenue
+			...		...		...
+    			2016		4		128355.40
+     			2017		1		138288.95
+     			2017		2		143177.03
+     	- Note two things:
+		- months are shown as integers from 1 to 12.
+		- months don't contain any information about the year.
+  - 
+    		- If you only grouped by the month, you'd get monthly revenue values summed across all years.
+      - In other words, the January revenue would show the sum of January 2016, January 2017, and January 2018. 
+	-To avoid that, we used EXTRACT() twice, with either year or month as the first argument. We also group all rows by both the year and month columns.
+    
             
