@@ -24,7 +24,8 @@ Overview
         - WHERE o.order_date >= '2017-03-01' AND o.order_date < '2017-04-01'
         - based on orders from **March 2017**
         - date format that we used: YYYY-MM-DD.
-    - Another WAY: date::DATE + INTERVAL 'number' interval
+	
+    - Another WAY: **date::DATE + INTERVAL 'number' interval**
         - where: interval – the interval we want to add, such as year, month or day.
         - number – the amount of that interval to add.
         - date – the date to be modified.
@@ -32,6 +33,7 @@ Overview
         - Quarter
             - '2018-01-01'::DATE + INTERVAL '3' month	
             - where order_date >= '2018-01-01'    and order_date <= '2018-01-01'::DATE + INTERVAL '3' month
+	    
     - Calculating the beginning of the current period (e.g. the current day, month, year, etc.). This will help us create revenue reports for the current year, month, quarter, etc. 
 	    - In PostgreSQL there is a function named DATE_TRUNC(). 
         - SELECT DATE_TRUNC('month', CURRENT_TIMESTAMP) AS current_month_start;
@@ -44,7 +46,8 @@ Overview
                     - is 2019-09-09 00:00:00.0 
                     - and the result of: SELECT DATE_TRUNC('year', '2018-07-10'::timestamp)
                     - is 2018-01-01 00:00:00.0.
-    - revenue reports for the current year, month, etc. 
+		    
+    - **revenue reports for the current year, month**, etc. 
 	- They're another frequent financial report, and they show how much the company earned so far in the given current period. 
 	    - Commonly used report types are:
         - year-to-date (YTD) – refers to the period beginning the first day of the current calendar year up to the current date.
@@ -52,17 +55,15 @@ Overview
         - quarter-to-date (QTD) – refers to the period of time between the beginning of the current quarter and the current date.
         - YTD, MTD, and QTD reports are used by business owners, investors, and individuals to analyze their revenue, income, business earnings, and investment returns for the current period of time.
             - For example, if we want to show the month-to-date revenue:
-            - WHERE order_date >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+            - **WHERE order_date >= DATE_TRUNC('month', CURRENT_TIMESTAMP)**
 
 15 Summary
-    - Let's have a short summary before we continue.
 
-To find rows for three months starting from March 20, 2017, use:
-SELECT ... FROM ...
-WHERE column_name >= '2017-03-20'
-  AND column_name < '2017-03-20'::DATE + INTERVAL '3' month
-	
-To find rows for the current month, use:
-SELECT ... FROM ...
-WHERE column_name >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+    - To find rows for three months starting from March 20, 2017, use:
+    	- SELECT ... FROM ...
+     	WHERE column_name >= '2017-03-20'
+     	AND column_name < '2017-03-20'::DATE + INTERVAL '3' month
+    - To find rows for the current month, use:
+    	- SELECT ... FROM ...
+     	- WHERE column_name >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
             
