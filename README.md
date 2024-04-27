@@ -74,8 +74,9 @@ Comparing revenue across different periods
 ==========================================================================
 19. we'll talk about reports with total revenue for multiple periods of time - year 1, year 2, year 3.....Calculating Delta..,delta %
 20. Total revenue for multiple periods
-	-  Showing the total revenue for each year
-		- we'll compare revenue values between consecutive years, months, or any other time periods.
+    
+-  Showing the total revenue for each year
+- we'll compare revenue values between consecutive years, months, or any other time periods.
 		- Such reports are commonly called **year-to-year, quarter-to-quarter, and month-to-month** reports.
 		
   		SELECT
