@@ -69,9 +69,9 @@ Overview
     	- SELECT ... FROM ...
      	- WHERE column_name >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
 
-=========================================================================
+--------------------------------------------------------------------------
 Comparing revenue across different periods
-==========================================================================
+---------------------------------------------------------------------------
 19. we'll talk about reports with total revenue for multiple periods of time - year 1, year 2, year 3.....Calculating Delta..,delta %
 20. Total revenue for multiple periods
     
@@ -174,7 +174,8 @@ Comparing revenue across different periods
 		Then, it groups all rows by the first column inside the parentheses (year) to compute the annual sums. 
 		Finally, it computes a grand total, i.e. as if we didn't group the rows by anything.
 		
-		As a general rule, ROLLUP() always creates new grouping combinations by removing columns one by one, starting from the right:
+		As a general rule, ROLLUP() always creates new grouping combinations by removing columns one by one,
+  		starting from the right:
 		
 		GROUP BY ROLLUP (A, B, C) =
 		GROUP BY (A, B, C) +
@@ -190,7 +191,8 @@ Comparing revenue across different periods
 		SELECT
 		  DATE_TRUNC('year', order_date) AS revenue_year, 
 		  SUM(amount) AS total_revenue,			----------> each year  
-		  LAG(SUM(amount), 1) OVER(ORDER BY DATE_TRUNC('year', order_date)) AS previous_year_revenue------->Prev yr
+		  LAG(SUM(amount), 1) OVER(ORDER BY DATE_TRUNC('year', order_date))
+  					AS previous_year_revenue------->Prev yr
 		FROM orders
 		GROUP BY DATE_TRUNC('year', order_date)
 		ORDER BY DATE_TRUNC('year', order_date);
@@ -302,7 +304,10 @@ Comparing revenue across different periods
 	2017-01-01 00:00:00+00	138288.95	143177.03	153937.83	181681.50
 	2018-01-01 00:00:00+00	193637.42	0.00		0.00	0.00
 	
-	 In other words, we want to see quarterly revenue values in the form of a table, with rows representing years and columns representing quarters. Such reports can help us see seasonal trends in revenue values. For instance, Q4 revenues are typically higher because of holiday shopping. It would be much harder to spot such trends when quarters are shown below each other.
+	 In other words, we want to see quarterly revenue values in the form of a table, with rows representing years and columns representing quarters. 
+  	Such reports can help us see seasonal trends in revenue values. 
+   	For instance, Q4 revenues are typically higher because of holiday shopping. 
+    	It would be much harder to spot such trends when quarters are shown below each other.
 
 	SELECT
 	  DATE_TRUNC('year', order_date) AS year, 
@@ -317,4 +322,118 @@ Comparing revenue across different periods
 	FROM orders
 	GROUP BY DATE_TRUNC('year', order_date)
 	ORDER BY DATE_TRUNC('year', order_date);
-In the query above, we grouped all rows by the DATE_TRUNC('year', order_date) value. This is something we've done before. However, we also used SUM(CASE WHEN...) expressions in the SELECT clause. In this case, the SUM(CASE WHEN...) expression first checks the quarter of the given order (EXTRACT(quarter FROM order_date) = X). If the quarter value matches the value for the given column, the order's amount is added. Otherwise, we add 0. This way, Q1 will only sum orders from the first quarter, Q2 will only sum orders from the second quarter, etc.
+
+	In the query above, we grouped all rows by the DATE_TRUNC('year', order_date) value. 
+ 	We also used SUM(CASE WHEN...) expressions in the SELECT clause. 
+  
+	  In this case, the SUM(CASE WHEN...) expression first checks the quarter of the given order 
+	  (EXTRACT(quarter FROM order_date) = X). 
+	  If the quarter value matches the value for the given column, the order's amount is added.   Otherwise, we add 0. 
+	  This way, Q1 will only sum orders from the first quarter, Q2 will only sum orders from the second quarter, etc.
+
+35 Creating a "revenue in quarters" report – exercise
+
+Create a "revenue in quarters" report showing the number of orders placed in each quarter of each year.
+The final report should look like this:
+
+	year	Q1	Q2	Q3	Q4
+	2016	0	0	70	82
+	2017	92	93	103	120
+	2018	182	88	0	0
+	Order the rows by year.
+ Query:
+
+	SELECT
+		DATE_TRUNC('year', order_date) AS year, 
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=1
+	          THEN 1 END) AS Q1,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=2
+	          THEN 1 END) AS Q2,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=3
+	          THEN 1 END) AS Q3,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=4
+	          THEN 1 END) AS Q4
+	FROM ORDERS
+	GROUP BY DATE_TRUNC('year', order_date)  
+	ORDER BY DATE_TRUNC('year', order_date) 
+output
+
+	year	q1	q2	q3	q4
+	2016-01-01 00:00:00+00	0	0	70	82
+	2017-01-01 00:00:00+00	92	93	103	120
+	2018-01-01 00:00:00+00	109	0	0	0
+	2020-01-01 00:00:00+00	0	8	7	8
+	2021-01-01 00:00:00+00	9	7	9	10
+	2022-01-01 00:00:00+00	11	13	11	10
+	2023-01-01 00:00:00+00	8	12	11	8
+	2024-01-01 00:00:00+00	13	6	0	0
+------------alternate---------using extract instead of datetrunc --lookat date o/p-----
+
+	SELECT
+		EXTRACT(YEAR FROM order_date) AS year,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=1
+	          THEN 1 END) AS Q1,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=2
+	          THEN 1 END) AS Q2,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=3
+	          THEN 1 END) AS Q3,
+	    COUNT(CASE WHEN EXTRACT(quarter FROM order_date)=4
+	          THEN 1 END) AS Q4
+	FROM ORDERS
+	GROUP BY EXTRACT(YEAR FROM order_date)
+	ORDER BY YEAR
+	year	q1	q2	q3	q4
+	2016	0	0	70	82
+	2017	92	93	103	120
+	2018	109	0	0	0
+	2020	0	8	7	8
+	2021	9	7	9	10
+	2022	11	13	11	10
+	2023	8	12	11	8
+	2024	13	6	0	0
+--------------------------------------------------------------          
+RECAP
+---------------------------------------------------------------
+1. To show the total revenue for each year, month or quarter, use DATE_TRUNC():
+	
+	 	SELECT
+		  DATE_TRUNC('year', order_date) AS revenue_year,
+		  SUM(amount) AS total_revenue 
+		FROM orders
+		GROUP BY DATE_TRUNC('year', order_date)
+		ORDER BY DATE_TRUNC('year', order_date);
+
+2. To show the total revenue on all aggregation levels, add ROLLUP():
+		   
+		...
+		GROUP BY ROLLUP(
+		  EXTRACT(year FROM order_date),
+		  EXTRACT(quarter FROM order_date)
+		)
+		...
+
+3. To show the revenue from the previous year, use LAG():
+   
+		LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date))
+
+5. To calculate the difference between the current period and the previous period, use:
+
+		SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)) AS delta
+
+7. To calculate the difference between the current period and the previous period as a percentage, use:
+
+		ROUND(100 * (
+		  (SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)))
+		  / (LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)))::float
+		  ), 2) AS delta_percentage
+
+8. To create a revenue in quarters report, use:
+
+		SELECT
+		  DATE_TRUNC('year', order_date) AS year, 
+		  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1 THEN amount ELSE 0 END) AS Q1,
+		  ...
+		FROM orders
+		GROUP BY DATE_TRUNC('year', order_date)
+		ORDER BY DATE_TRUNC('year', order_date);
+--------------------------------------------------------------
