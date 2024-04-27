@@ -12,11 +12,15 @@ Revenue-Trend-Analysis-in-PostgreSQL -Comparing revenue across different periods
 Revenue-Trend-Analysis-in-PostgreSQL -Comparing revenue across different periods - Showing total revenue for a previous period - LAG() – explanation
 ![image](https://github.com/mythilyram/Revenue-Trend-Analysis-in-PostgreSQL/assets/123518126/7d2083b3-1a26-4ab3-a650-96d69b874811)
 
+Overview
+
 1-6. Getting to know the database
+
 7-14 Basic revenue metrics
-    Revenue to date - sum(amt), 
-    given a category / ship_country use WHERE
-    Time constraints in revenue reports - 
+
+    - Revenue to date - sum(amt), 
+    - given a category / ship_country use WHERE
+    - Time constraints in revenue reports - 
         - WHERE o.order_date >= '2017-03-01' AND o.order_date < '2017-04-01'
         - based on orders from March 2017
         - date format that we used: YYYY-MM-DD.
