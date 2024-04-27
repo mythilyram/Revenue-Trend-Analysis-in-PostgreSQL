@@ -526,3 +526,246 @@ This report format is useful when we have many categories to compare but few tim
 
 Exercise
 Show the category revenue for each quarter of 2017. Show the following columns: category_name, overall_category_revenue, revenue_Q1, revenue_Q2, revenue_Q3, and revenue_Q4.
+/*SELECT
+	category_name,
+  SUM(oi.amount) AS overall_category_revenue,
+  SUM(CASE WHEN order_date >= '2017-01-01' AND order_date < '2017-04-01' THEN oi.amount ELSE 0.0 END) AS revenue_Q1,
+  SUM(CASE WHEN order_date >= '2017-04-01' AND order_date < '2017-07-01' THEN oi.amount ELSE 0.0 END) AS revenue_Q2,
+  SUM(CASE WHEN order_date >= '2017-07-01' AND order_date < '2017-10-01' THEN oi.amount ELSE 0.0 END) AS revenue_Q3,
+  SUM(CASE WHEN order_date >= '2017-10-01' AND order_date < '2018-01-01' THEN oi.amount ELSE 0.0 END) AS revenue_Q4
+FROM order_items oi 
+JOIN orders o
+  ON oi.order_id = o.order_id
+JOIN products p
+  ON p.product_id = oi.product_id
+JOIN categories c
+  ON c.category_id = p.category_id
+GROUP BY
+  c.category_id,
+  category_name;*/
+--------------1st is my solution . did not work----------below is from the site----------
+SELECT
+  category_name,
+  SUM(oi.amount) AS overall_category_revenue,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1 THEN oi.amount ELSE 0.0 END) AS revenue_Q1,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 2 THEN oi.amount ELSE 0.0 END) AS revenue_Q2,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 3 THEN oi.amount ELSE 0.0 END) AS revenue_Q3,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 4 THEN oi.amount ELSE 0.0 END) AS revenue_Q4
+FROM order_items oi 
+JOIN orders o
+  ON oi.order_id = o.order_id
+JOIN products p
+  ON p.product_id = oi.product_id
+JOIN categories c
+  ON c.category_id = p.category_id
+WHERE order_date >= '2017-01-01'
+  AND order_date < '2018-01-01'
+GROUP BY
+  c.category_id,
+  category_name;
+-----------------------
+Revenue in all categories for selected periods – exercise
+Excellent! Let's try a similar exercise.
+
+Exercise
+Compare the category revenues for orders placed in December 2016 and December 2017. Show the following columns: category_name, december_2016, and december_2017.
+
+-------- changed only dates--------
+SELECT
+	category_name,
+  SUM(CASE WHEN order_date >= '2016-12-01' AND order_date < '2017-01-01' THEN oi.amount ELSE 0.0 END) AS december_2016,
+  SUM(CASE WHEN order_date >= '2017-12-01' AND order_date < '2018-01-01' THEN oi.amount ELSE 0.0 END) AS december_2017
+FROM order_items oi 
+JOIN orders o
+  ON oi.order_id = o.order_id
+JOIN products p
+  ON p.product_id = oi.product_id
+JOIN categories c
+  ON c.category_id = p.category_id
+GROUP BY
+  c.category_id,
+  category_name;
+=------------------------
+Revenue change in all categories for selected periods
+Well done! We can create another version of the same report, this one showing revenue deltas. We'd like to get a report like this:
+
+category_name	overall_category_revenue	revenue_2016	change_2017	change_2018
+Confections	167357.26	29685.56	52972.19	-27643.80
+Meat/Poultry	163022.37	28813.66	52161.46	-27741.53
+To that end, we can use the query below:
+
+SELECT
+  category_name,
+  SUM(oi.amount) AS overall_category_revenue,
+
+  SUM(CASE WHEN order_date >= '2016-01-01' AND order_date < '2017-01-01' THEN oi.amount ELSE 0.0 END) AS revenue_2016,
+
+  SUM(CASE WHEN order_date >= '2017-01-01' AND order_date < '2018-01-01' THEN oi.amount ELSE 0.0 END)
+    - SUM(CASE WHEN order_date >= '2016-01-01' AND order_date < '2017-01-01' THEN oi.amount ELSE 0.0 END) AS change_2017,
+
+  SUM(CASE WHEN order_date >= '2018-01-01' AND order_date < '2019-01-01' THEN oi.amount ELSE 0.0 END)
+    - SUM(CASE WHEN order_date >= '2017-01-01' AND order_date < '2018-01-01' THEN oi.amount ELSE 0.0 END) AS change_2018
+
+FROM order_items oi 
+JOIN orders o
+  ON oi.order_id = o.order_id
+JOIN products p
+  ON p.product_id = oi.product_id
+JOIN categories c
+  ON c.category_id = p.category_id
+GROUP BY
+  c.category_id,
+  category_name;
+As you can see, the last two columns subtract the previous year's sum from the current year's sum.
+
+Exercise
+Create a report similar to the one shown in the explanation.
+This time, however, show the revenue in the first quarter of 2017 and the revenue changes in the next three quarters of 2017.
+Show the following columns: category_name, overall_category_revenue_2017, revenue_2017_Q1, change_Q2, change_Q3, and change_Q4.
+
+SELECT
+  category_name,
+  SUM(oi.amount) AS overall_category_revenue_2017,
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1 THEN oi.amount ELSE 0.0 END) AS revenue_2017_Q1,
+  
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 2 THEN oi.amount ELSE 0.0 END) -
+  	SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1 THEN oi.amount ELSE 0.0 END)AS change_Q2,
+    
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 3 THEN oi.amount ELSE 0.0 END)-
+  	SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 2 THEN oi.amount ELSE 0.0 END) AS change_Q3,
+    
+  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 4 THEN oi.amount ELSE 0.0 END) -
+  	SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 3 THEN oi.amount ELSE 0.0 END) AS change_Q4
+FROM order_items oi 
+JOIN orders o
+  ON oi.order_id = o.order_id
+JOIN products p
+  ON p.product_id = oi.product_id
+JOIN categories c
+  ON c.category_id = p.category_id
+WHERE order_date >= '2017-01-01'
+  AND order_date < '2018-01-01'
+GROUP BY
+  c.category_id,
+  category_name;
+
+========================================================Summary ======================================================
+Summary
+Good job! Before we move on to the final quiz for this course, let's review what we've learned:
+
+To create a report with history-to-date category revenue values:
+SELECT 
+  category_name,
+  SUM(amount) AS total_revenue 
+FROM order_items oi
+JOIN products p
+  ON oi.product_id = p.product_id
+JOIN categories c
+  ON p.category_id = c.category_id
+GROUP BY category_name;
+To show category revenue values and their relation to the total revenue, use:
+WITH all_categories AS (
+  SELECT SUM(amount) AS total_sum
+  FROM orders
+)
+SELECT 
+  category_name,
+  SUM(oi.amount) AS category_revenue,
+  1.0 * SUM(oi.amount) / ac.total_sum AS total_revenue_ratio
+FROM all_categories ac, order_items oi
+JOIN orders o
+  ON o.order_id = oi.order_id
+JOIN products p
+  ON oi.product_id = p.product_id
+JOIN categories c
+  ON p.category_id = c.category_id
+GROUP BY
+  category_name,
+  ac.total_sum;
+To show the category revenue for selected categories for each time period or category revenue for each category and selected time periods, use SUM(CASE WHEN) along with GROUP BY. For instance:
+SELECT 
+  DATE_TRUNC('year', order_date) AS revenue_year,
+  SUM(oi.amount) AS total_revenue, 
+  SUM(CASE WHEN c.category_name = 'Beverages' THEN oi.amount ELSE 0.0 END) AS beverages_revenue,
+  SUM(CASE WHEN c.category_name = 'Seafood' THEN oi.amount ELSE 0.0 END) AS seafood_revenue 
+FROM order_items oi 
+JOIN orders o
+  ON oi.order_id = o.order_id
+JOIN products p
+  ON p.product_id = oi.product_id
+JOIN categories c
+  ON c.category_id = p.category_id
+GROUP BY DATE_TRUNC('year', order_date)
+ORDER BY DATE_TRUNC('year', order_date);
+
+
+
+
+Question 1
+Okay, let's start with Question 1.
+
+Exercise
+For all orders placed in the first three months of 2017, show the total revenue for all categories. Show the following columns: category_name and total_revenue.
+
+SELECT
+	category_name,
+	SUM(oi.amount) as total_revenue
+FROM order_items oi
+JOIN products p
+USING (product_id)
+JOIN categories c
+USING(category_id)
+JOIN orders o
+USING(order_id)
+WHERE order_date >= '2017-01-01' AND order_date < '2017-04-01'
+GROUP BY category_name
+
+Question 2
+Very good! Let's move on to Question 2.
+
+Exercise
+For each category, find the December 2016 revenue and show it alongside the ratio of that category's revenue to the total revenue for December 2016. 
+Show the following columns: category_name, category_revenue, and total_revenue_ratio. Round the total_revenue_ratio to 2 decimal places.
+
+WITH TOT_DEC_2016_REVENUE AS(
+  SELECT 
+  	SUM(O.amount) as total_revenue_dec2017
+  FROM orders O
+  WHERE order_date >= '2016-12-01' AND order_date < '2017-01-01'
+  )
+SELECT
+	category_name,
+    SUM(oi.amount) as category_revenue,:::::::::::::::::::::::::::::::::::::::::::::::::o.amount gives wrong answer:::::::::::::::::::::
+    ROUND(1.0*SUM(oi.amount)/total_revenue_dec2017,2) as total_revenue_ratio
+FROM TOT_DEC_2016_REVENUE, order_items oi
+JOIN products p
+USING (product_id)
+JOIN categories c
+USING(category_id)
+JOIN orders o
+USING(order_id)
+WHERE order_date >= '2016-12-01' AND order_date < '2017-01-01'
+GROUP BY category_name,total_revenue_dec2017
+---------------
+Question 3
+Well done! Are you ready to tackle the third and final problem?
+
+Exercise
+For each year, find the revenue for the 'Grains/Cereals' and 'Meat/Poultry' categories, based on orders shipped to France, Germany, and Italy. 
+Show the following columns: revenue_year, total_revenue, grains_revenue, and meat_revenue. Use 0.0 for the ELSE case of CASE WHEN. Order the results by year.
+
+SELECT
+	DATE_TRUNC('year', order_date) AS revenue_year,
+    SUM(oi.amount) as total_revenue,
+    SUM(CASE WHEN category_name='Grains/Cereals' THEN oi.amount ELSE 0.0 END) AS grains_revenue,
+    SUM(CASE WHEN category_name='Meat/Poultry' THEN oi.amount ELSE 0.0 END) AS meat_revenue
+FROM orders o
+JOIN order_items oi
+USING(order_id)
+JOIN products p
+USING (product_id)
+JOIN categories c
+USING(category_id)
+WHERE ship_country IN ('France', 'Germany', 'Italy')
+GROUP BY DATE_TRUNC('year', order_date)
+ORDER BY DATE_TRUNC('year', order_date)
