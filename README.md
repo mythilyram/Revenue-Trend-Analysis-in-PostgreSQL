@@ -167,5 +167,21 @@ Comparing revenue across different periods
 		the grand total revenue – the total sum for all years (revenue_year and revenue_quarter being NULL).
 		the annual revenues – the sums for each year (revenue_quarter being NULL).
 		the sums for each year and quarter (being the results of the query from the pevious exercise).
-    
+- In PostgreSQL, ROLLUP() is an extension of GROUP BY.
+  
+		Inside the brackets, we provide all the columns that we want to group the rows by. 
+		ROLLUP() first groups the rows by both columns (in this case, year and quarter) to compute quarterly sums. 
+		Then, it groups all rows by the first column inside the parentheses (year) to compute the annual sums. 
+		Finally, it computes a grand total, i.e. as if we didn't group the rows by anything.
+		
+		As a general rule, ROLLUP() always creates new grouping combinations by removing columns one by one, starting from the right:
+		
+		GROUP BY ROLLUP (A, B, C) =
+		GROUP BY (A, B, C) +
+		GROUP BY (A, B) +
+		GROUP BY (A) +
+		GROUP BY ()
+		The diagram below explains where the resulting rows come from:
+    ![image](https://github.com/mythilyram/Revenue-Trend-Analysis-in-PostgreSQL/assets/123518126/7b3f63f2-b761-40e7-a423-54231b91e89d)
+
             
