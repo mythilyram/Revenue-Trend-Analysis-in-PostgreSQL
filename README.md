@@ -137,26 +137,35 @@ Comparing revenue across different periods
     		- To avoid that, we used EXTRACT() twice, with either year or month as the first argument. We also group all rows by both the year and month columns.
 
  - Using the EXTRACT() function in PostgreSQL to generate revenue in period report is tricky, because you have to use it twice to tell apart years and months.
- 		- However, there is one scenario when EXTRACT() is useful. 
-		- Let’s say we want a report containing:
-   			quarterly revenue values.
-   			annual revenue values. the grand total revenue value.
-Here's an example of the result we'd like to achieve:  SEE PIC 2 IN 
 
-rollup – result example
+    - However, there is one scenario when EXTRACT() is useful. 
+	- Let’s say we want a report containing:
+   		- quarterly revenue values.
+   		- annual revenue values.
+     q		-  the grand total revenue value.
+		- Here's an example of the result we'd like to achieve:  SEE PIC 2 IN rollup – result example
+  - ![image](https://github.com/mythilyram/Revenue-Trend-Analysis-in-PostgreSQL/assets/123518126/74d4f3dd-d76f-4d36-b563-6cb3408f9f24)
 
-Sound complicated? Here's a query to handle it:
-
-SELECT
-  EXTRACT(year FROM order_date) AS revenue_year, 
-  EXTRACT(quarter FROM order_date) AS revenue_quarter, 
-  SUM(amount) AS total_revenue 
-FROM orders
-GROUP BY ROLLUP(
-  EXTRACT(year FROM order_date),
-  EXTRACT(quarter FROM order_date)
-)
-ORDER BY
-  EXTRACT(year FROM order_date), 
-  EXTRACT(quarter FROM order_date);
+				 SELECT
+					  EXTRACT(year FROM order_date) AS revenue_year,
+					  EXTRACT(quarter FROM order_date) AS revenue_quarter,
+					  SUM(amount) AS total_revenue
+				FROM orders
+				GROUP BY ROLLUP(
+					  EXTRACT(year FROM order_date),
+					  EXTRACT(quarter FROM order_date)
+    				)
+				ORDER BY
+				  EXTRACT(year FROM order_date), 
+				  EXTRACT(quarter FROM order_date);
+    
+    		- As you can see, we've got rows showing three aggregation levels: 
+		the grand total revenue, annual revenues, and the quarterly revenues for each year.
+		
+		In other words, now you can see:
+		
+		the grand total revenue – the total sum for all years (revenue_year and revenue_quarter being NULL).
+		the annual revenues – the sums for each year (revenue_quarter being NULL).
+		the sums for each year and quarter (being the results of the query from the pevious exercise).
+    
             
