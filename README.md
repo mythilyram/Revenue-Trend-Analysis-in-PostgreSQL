@@ -229,7 +229,7 @@ Comparing revenue across different periods
 			ORDER BY DATE_TRUNC('month', order_date)
 - 30 Calculating revenue deltas as percentages
 	- Here’s the expression we want to calculate:
-	-** 100.0⋅ (total_revenue − previous_year_total_revenue) / previous_year_total_revenue**
+	- ** 100.0⋅ (total_revenue − previous_year_total_revenue) / previous_year_total_revenue**
 	- To avoid integer division we multiply the numerator by 100.0:
 		- 100.0 * ((SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)))
 		- We round the percentage to two decimal places using the ROUND(value, 2) function.	
@@ -252,4 +252,69 @@ Comparing revenue across different periods
 				2016-01-01 00:00:00+00	208083.99	NULL
 				2017-01-01 00:00:00+00	617085.35	196.56
 				2018-01-01 00:00:00+00	193637.42	-68.62
+    
+--------------------Creating "revenue in quarters" reports-----------------------------------
 
+32 Creating new columns with custom values - CASE WHEN THEN END
+	
+	 SELECT
+	  order_id,
+	  CASE WHEN ship_country IN ('USA', 'Canada', 'Mexico') THEN 'North America' 
+	    ELSE 'Elsewhere'
+	  END AS continent
+	FROM orders;
+	We'll obtain the following result:
+	
+	order_id	continent
+	...	...
+	10258	Elsewhere
+	10259	North America
+	10260	Elsewhere
+	...	...
+
+ 33 Creating columns with custom sums
+	-  we want to create two columns that show different order sums based on the ship_country column. 
+
+	SELECT
+	  SUM(CASE
+	    WHEN ship_country IN ('USA', 'Canada', 'Mexico')
+	      THEN amount
+	    ELSE 0.0
+	  END) AS sum_north_america,
+	  SUM(CASE
+	    WHEN ship_country NOT IN ('USA', 'Canada', 'Mexico')
+	      THEN amount
+	    ELSE 0.0
+	  END) AS sum_elsewhere
+	FROM orders;
+
+	Above, we twice used the CASE WHEN along with the SUM() function. 
+	For each row, CASE WHEN checks the value in the ship_country column. 
+	The order's amount is only added if the ship_country value matches the given condition. 
+	Otherwise, 0.0 is added. 
+ 	As a result, we'll get the total sum from orders shipped to the USA, Canada, and Mexico 
+	in the first column and the total sum from orders shipped to all other countries in the second column.
+ 34 Creating a "revenue in quarters" report
+ 	We can now create a new report type. It should look like this:
+
+	year			Q1		Q2		Q3		Q4
+	2016-01-01 00:00:00+00	0.00		0.00		79728.58	128355.40
+	2017-01-01 00:00:00+00	138288.95	143177.03	153937.83	181681.50
+	2018-01-01 00:00:00+00	193637.42	0.00		0.00	0.00
+	
+	 In other words, we want to see quarterly revenue values in the form of a table, with rows representing years and columns representing quarters. Such reports can help us see seasonal trends in revenue values. For instance, Q4 revenues are typically higher because of holiday shopping. It would be much harder to spot such trends when quarters are shown below each other.
+
+	SELECT
+	  DATE_TRUNC('year', order_date) AS year, 
+	  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 1
+	  THEN amount ELSE 0 END) AS Q1,
+	  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 2
+	  THEN amount ELSE 0 END) AS Q2,
+	  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 3
+	  THEN amount ELSE 0 END) AS Q3,
+	  SUM(CASE WHEN EXTRACT(quarter FROM order_date) = 4
+	  THEN amount ELSE 0 END) AS Q4
+	FROM orders
+	GROUP BY DATE_TRUNC('year', order_date)
+	ORDER BY DATE_TRUNC('year', order_date);
+In the query above, we grouped all rows by the DATE_TRUNC('year', order_date) value. This is something we've done before. However, we also used SUM(CASE WHEN...) expressions in the SELECT clause. In this case, the SUM(CASE WHEN...) expression first checks the quarter of the given order (EXTRACT(quarter FROM order_date) = X). If the quarter value matches the value for the given column, the order's amount is added. Otherwise, we add 0. This way, Q1 will only sum orders from the first quarter, Q2 will only sum orders from the second quarter, etc.
