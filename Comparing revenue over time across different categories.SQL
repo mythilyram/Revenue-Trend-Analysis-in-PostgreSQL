@@ -1,3 +1,5 @@
+Part 3
+
 Welcome
 Hello and welcome to the last part of our course.
 Previously, we learned to create reports showing revenue values across different periods. 
@@ -42,7 +44,7 @@ Are you ready?
 
 =================================================================================
 
-Getting information from the right tables
+42 Getting information from the right tables
 Before we start creating reports that use product categories, let's get comfortable with joining tables. 
 Look at the following query:
 
@@ -87,7 +89,7 @@ product_id	category_name	product_name	amount
 
 -----------------------------------
 
-History-to-date revenue in categories
+43. History-to-date revenue in categories
 Good! Let's get started. There are two queries which we can use for total revenue as follows:
 
 SELECT SUM(amount) AS total_revenue
@@ -132,7 +134,7 @@ Produce	99984.58
 Condiments	106047.15
 Confections	167357.29
 -----------------------------------------------------------------
-History-to-date revenue in categories with filtering
+44. History-to-date revenue in categories with filtering
 Nice! We can also use additional filters when we calculate the total revenue in each category. 
 For instance, if we wanted to show the total revenue in each category for orders placed in 2016,
 we could use the following query:
@@ -169,7 +171,7 @@ JOIN categories c
 WHERE ship_country = 'USA'
 GROUP BY category_name;
 ---------------------------------------------JUST Changed where condn---------------
-Revenue in categories – exercise
+45. Revenue in categories – exercise
 Perfect! Let's try an additional exercise.
 
 Exercise
@@ -202,7 +204,7 @@ Produce	23878.48
 Seafood	20671.07
 ---------------------------
 
-Category revenue with total revenue
+46. Category revenue with total revenue
 Excellent! Now, we want to show the total revenue (as a reference point) next to the revenue of each category. We can use the following trick:
 
 WITH all_categories AS (
@@ -249,8 +251,32 @@ Exercise
 Create a report that shows the category revenue values for all orders placed in 2017. 
 Show three columns: category_name, category_revenue, and total_sum. 
 The last column should show the total revenue from 2017 for all rows.
+WITH all_categories AS (
+  SELECT SUM(amount) AS total_sum
+  FROM orders
+  WHERE order_date >= '2017-01-01'
+    AND order_date < '2018-01-01'
+)
+SELECT 
+  category_name,
+  SUM(oi.amount) AS category_revenue,
+  ac.total_sum
+FROM all_categories ac, order_items oi
+JOIN orders o
+  ON o.order_id = oi.order_id
+JOIN products p
+  ON oi.product_id = p.product_id
+JOIN categories c
+  ON p.category_id = c.category_id
+WHERE order_date >= '2017-01-01'
+  AND order_date < '2018-01-01'
+GROUP BY
+  category_name,
+  ac.total_sum;
 
-Category revenue with revenue ratio
+
+
+47. Category revenue with revenue ratio
 Good job! Now that we know how to add total_revenue as the last column, we can calculate the ratio between a category's revenue and total revenue. Such a report can help us quickly identify which categories generate the most revenue. Here's the query:
 
 WITH all_categories AS (
@@ -330,10 +356,10 @@ WHERE ship_country = 'Germany'
   category_name,
   ac.total_sum
   ;
-=-----------------
+=----------------------------------------------------------
 Revenue for all time periods for selected categories:
-
-Perfect! Next, we'd like to compare revenue values in selected categories year-to-year, quarter-to-quarter, etc. 
+-------------------------------------------------------
+49. Perfect! Next, we'd like to compare revenue values in selected categories year-to-year, quarter-to-quarter, etc. 
 This way, we can analyze whether the category revenue increases or decreases over time.
 
 The report should look like this:
@@ -401,7 +427,7 @@ GROUP BY DATE_TRUNC('quarter', order_date)
 ORDER BY DATE_TRUNC('quarter', order_date);
 
 ------------
-Revenue for all time periods for selected categories – exercise
+50. Revenue for all time periods for selected categories – exercise
 Good job! Let's try another exercise before we move on.
 
 Exercise
@@ -435,7 +461,7 @@ GROUP BY DATE_TRUNC('month', order_date)
 ORDER BY DATE_TRUNC('month', order_date);
 
 -------------
-Revenue delta in all time periods for selected categories
+51. Revenue delta in all time periods for selected categories
 Great work! We can also create another version of this report by changing revenue values into revenue deltas. The end result should look like this:
 
 revenue_year	total_revenue_delta	beverages_revenue_delta	seafood_revenue_delta
@@ -491,6 +517,12 @@ WHERE order_date >= '2017-01-01'
 GROUP BY DATE_TRUNC('quarter', order_date)
 ORDER BY DATE_TRUNC('quarter', order_date);
 
+revenue_quarter	total_revenue_delta	produce_revenue_delta	confections_revenue_delta
+2017-01-01 00:00:00+00	null	null	null
+2017-04-01 00:00:00+00	4888.12	5755.84	2086.40
+2017-07-01 00:00:00+00	10760.76	-6055.88	-1126.50
+2017-10-01 00:00:00+00	27743.67	13539.73	1383.86
+
 --------------------
 ============================================================================================================
 ROWS -> COLUMNS
@@ -520,6 +552,7 @@ JOIN categories c
 GROUP BY
   c.category_id,
   category_name;
+
 This time we don't group by time periods. Instead, we group by product categories. On the other hand, we have to define separate columns, using SUM(CASE WHEN...) for each period we want to compare.
 
 This report format is useful when we have many categories to compare but few time periods.
@@ -563,8 +596,19 @@ WHERE order_date >= '2017-01-01'
 GROUP BY
   c.category_id,
   category_name;
+
+category_name	overall_category_revenue	revenue_q1	revenue_q2	revenue_q3	revenue_q4
+Beverages	103924.32	35386.88	25982.03	19452.86	23102.55
+Condiments	55368.63	13026.08	12852.70	13315.05	16174.80
+Confections	82657.78	19316.93	21403.33	20276.83	21660.69
+Dairy Products	115387.66	24380.14	24666.98	30634.21	35706.33
+Grains/Cereals	56871.83	12409.10	15157.50	15244.53	14060.70
+Meat/Poultry	80975.12	17402.35	14932.45	20640.51	27999.81
+Produce	54940.77	9061.32	14817.16	8761.28	22301.01
+Seafood	66959.24	7306.15	13364.92	25612.56	20675.61
+
 -----------------------
-Revenue in all categories for selected periods – exercise
+53. Revenue in all categories for selected periods – exercise
 Excellent! Let's try a similar exercise.
 
 Exercise
@@ -585,6 +629,15 @@ JOIN categories c
 GROUP BY
   c.category_id,
   category_name;
+category_name	december_2016	december_2017
+Dairy Products	10952.66	9844.85
+Meat/Poultry	8956.80	12767.17
+Condiments	1497.44	5824.20
+Confections	5872.65	8778.15
+Grains/Cereals	2194.00	5242.35
+Produce	3190.82	12157.90
+Beverages	9431.80	10876.65
+Seafood	3143.46	5907.18
 =------------------------
 Revenue change in all categories for selected periods
 Well done! We can create another version of the same report, this one showing revenue deltas. We'd like to get a report like this:
@@ -616,6 +669,17 @@ JOIN categories c
 GROUP BY
   c.category_id,
   category_name;
+category_name	overall_category_revenue_2017	revenue_2017_q1	change_q2	change_q3	change_q4
+Beverages	103924.32	35386.88	-9404.85	-6529.17	3649.69
+Condiments	55368.63	13026.08	-173.38	462.35	2859.75
+Confections	82657.78	19316.93	2086.40	-1126.50	1383.86
+Dairy Products	115387.66	24380.14	286.84	5967.23	5072.12
+Grains/Cereals	56871.83	12409.10	2748.40	87.03	-1183.83
+Meat/Poultry	80975.12	17402.35	-2469.90	5708.06	7359.30
+Produce	54940.77	9061.32	5755.84	-6055.88	13539.73
+Seafood	66959.24	7306.15	6058.77	12247.64	-4936.95
+
+
 As you can see, the last two columns subtract the previous year's sum from the current year's sum.
 
 Exercise
@@ -720,6 +784,16 @@ USING(order_id)
 WHERE order_date >= '2017-01-01' AND order_date < '2017-04-01'
 GROUP BY category_name
 
+category_name	total_revenue
+Beverages	35386.88
+Condiments	13026.08
+Confections	19316.93
+Dairy Products	24380.14
+Grains/Cereals	12409.10
+Meat/Poultry	17402.35
+Produce	9061.32
+Seafood	7306.15
+
 Question 2
 Very good! Let's move on to Question 2.
 
@@ -746,6 +820,17 @@ JOIN orders o
 USING(order_id)
 WHERE order_date >= '2016-12-01' AND order_date < '2017-01-01'
 GROUP BY category_name,total_revenue_dec2017
+
+category_name	category_revenue	total_revenue_ratio
+Beverages	9431.80	0.21
+Condiments	1497.44	0.03
+Confections	5872.65	0.13
+Dairy Products	10952.66	0.24
+Grains/Cereals	2194.00	0.05
+Meat/Poultry	8956.80	0.20
+Produce	3190.82	0.07
+Seafood	3143.46	0.07
+
 ---------------
 Question 3
 Well done! Are you ready to tackle the third and final problem?
@@ -769,3 +854,14 @@ USING(category_id)
 WHERE ship_country IN ('France', 'Germany', 'Italy')
 GROUP BY DATE_TRUNC('year', order_date)
 ORDER BY DATE_TRUNC('year', order_date)
+
+revenue_year	total_revenue	grains_revenue	meat_revenue
+2016-01-01 00:00:00+00	53759.85	4224.46	7323.76
+2017-01-01 00:00:00+00	170530.01	11678.23	17108.37
+2018-01-01 00:00:00+00	57445.38	4646.68	5266.00
+2020-01-01 00:00:00+00	5012.18	147.00	0.0
+2021-01-01 00:00:00+00	14324.04	0.0	2623.06
+2022-01-01 00:00:00+00	8749.30	560.00	0.0
+2023-01-01 00:00:00+00	13552.44	0.0	840.00
+2024-01-01 00:00:00+00	4039.98	0.0	262.40
+
