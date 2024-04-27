@@ -133,7 +133,30 @@ Comparing revenue across different periods
 		- months don't contain any information about the year.
   - 
     		- If you only grouped by the month, you'd get monthly revenue values summed across all years.
-      - In other words, the January revenue would show the sum of January 2016, January 2017, and January 2018. 
-	-To avoid that, we used EXTRACT() twice, with either year or month as the first argument. We also group all rows by both the year and month columns.
-    
+    		- In other words, the January revenue would show the sum of January 2016, January 2017, and January 2018.
+    		- To avoid that, we used EXTRACT() twice, with either year or month as the first argument. We also group all rows by both the year and month columns.
+
+ - Using the EXTRACT() function in PostgreSQL to generate revenue in period report is tricky, because you have to use it twice to tell apart years and months.
+ 		- However, there is one scenario when EXTRACT() is useful. 
+		- Let’s say we want a report containing:
+   			quarterly revenue values.
+   			annual revenue values. the grand total revenue value.
+Here's an example of the result we'd like to achieve:  SEE PIC 2 IN 
+
+rollup – result example
+
+Sound complicated? Here's a query to handle it:
+
+SELECT
+  EXTRACT(year FROM order_date) AS revenue_year, 
+  EXTRACT(quarter FROM order_date) AS revenue_quarter, 
+  SUM(amount) AS total_revenue 
+FROM orders
+GROUP BY ROLLUP(
+  EXTRACT(year FROM order_date),
+  EXTRACT(quarter FROM order_date)
+)
+ORDER BY
+  EXTRACT(year FROM order_date), 
+  EXTRACT(quarter FROM order_date);
             
