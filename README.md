@@ -85,7 +85,7 @@ Comparing revenue across different periods
  		FROM orders
  		GROUP BY revenue_year
 		ORDER BY revenue_year;
-  - Showing total revenue for each month and quarter
+ - 21 Showing total revenue for each month and quarter
 
     		Select
   			DATE_TRUNC('month', order_date) AS month_in_2016,
@@ -99,7 +99,7 @@ Comparing revenue across different periods
     			2016-08-01 00:00:00+00	25485.28
     			2016-09-01 00:00:00+00	26381.40
     			2016-10-01 00:00:00+00	37515.73
-  - THe EXTRACT() function
+  - 22 THe EXTRACT() function
      
     	SELECT
     	  EXTRACT(year FROM order_date) AS revenue_year,
@@ -112,7 +112,7 @@ Comparing revenue across different periods
     			2016	208083.98
     			2017	617085.21
     			2018	440623.90
-  -  To show the monthly revenue in each year we must use the EXTRACT() function twice.
+  - 23  To show the monthly revenue in each year we must use the EXTRACT() function twice.
 
          SELECT
     	  	EXTRACT(year FROM order_date) AS revenue_year,
@@ -136,7 +136,7 @@ Comparing revenue across different periods
     		- In other words, the January revenue would show the sum of January 2016, January 2017, and January 2018.
     		- To avoid that, we used EXTRACT() twice, with either year or month as the first argument. We also group all rows by both the year and month columns.
 
- - Using the EXTRACT() function in PostgreSQL to generate revenue in period report is tricky, because you have to use it twice to tell apart years and months.
+ - 24 Using the EXTRACT() function in PostgreSQL to generate revenue in period report is tricky, because you have to use it twice to tell apart years and months.
 
     - However, there is one scenario when EXTRACT() is useful. 
 	- Let’s say we want a report containing:
@@ -167,7 +167,7 @@ Comparing revenue across different periods
 		the grand total revenue – the total sum for all years (revenue_year and revenue_quarter being NULL).
 		the annual revenues – the sums for each year (revenue_quarter being NULL).
 		the sums for each year and quarter (being the results of the query from the pevious exercise).
-- In PostgreSQL, ROLLUP() is an extension of GROUP BY.
+- 25 In PostgreSQL, ROLLUP() is an extension of GROUP BY.
   
 		Inside the brackets, we provide all the columns that we want to group the rows by. 
 		ROLLUP() first groups the rows by both columns (in this case, year and quarter) to compute quarterly sums. 
@@ -183,5 +183,73 @@ Comparing revenue across different periods
 		GROUP BY ()
 		The diagram below explains where the resulting rows come from:
     ![image](https://github.com/mythilyram/Revenue-Trend-Analysis-in-PostgreSQL/assets/123518126/7b3f63f2-b761-40e7-a423-54231b91e89d)
+  
+--------------Calculating Deltas -----------------------------
+- 26,27 Showing total revenue for a previous period
+		
+		SELECT
+		  DATE_TRUNC('year', order_date) AS revenue_year, 
+		  SUM(amount) AS total_revenue,			----------> each year  
+		  LAG(SUM(amount), 1) OVER(ORDER BY DATE_TRUNC('year', order_date)) AS previous_year_revenue------->Prev yr
+		FROM orders
+		GROUP BY DATE_TRUNC('year', order_date)
+		ORDER BY DATE_TRUNC('year', order_date);
+		We used DATE_TRUNC() function as a more efficient way in PostgreSQL than EXTRACT().
+  
+- 28 Calculating revenue deltas
 
-            
+		 SELECT
+		  DATE_TRUNC('year', order_date) AS revenue_year, 
+		  SUM(amount) AS total_revenue,
+		  SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)) AS delta
+		FROM orders
+		GROUP BY DATE_TRUNC('year', order_date)
+		ORDER BY DATE_TRUNC('year', order_date);
+
+  	Result:
+		
+		revenue_year	 	total_revenue	delta
+		2016-01-01 00:00:00+00	208083.99	null
+		2017-01-01 00:00:00+00	617085.35	409001.36
+		2018-01-01 00:00:00+00	193637.42	-423447.93
+
+  	- In the delta column, we simply subtracted the revenue generated in the previous year from the revenue generated in the current year. 
+	- Once again, we used the LAG() function pattern from the previous exercise.
+-29 Exercise -
+   - Calculate the total monthly revenue for each month of 2017, along with the revenue change as compared to the previous month. 	- Show three columns: revenue_month, total_revenue, and delta.
+	- In the first row, leave the delta value as NULL. Order the rows by month.
+
+			SELECT
+				DATE_TRUNC('month', order_date)  as revenue_month, .....................................................DATE_TRUNC('month', order_date) gives 2017-01-01 00:00:00+00
+			    sum(amount) as total_revenue,
+			     sum(amount) - LAG(sum(amount) ,1) OVER(ORDER BY DATE_TRUNC('month', order_date)) delta
+			FROM orders
+			WHERE EXTRACT(YEAR FROM order_date) = 2017 .................................................................EXTRACT( YEAR FROM date) GIVES ONLY YEAR PART ie 2017
+			GROUP BY DATE_TRUNC('month', order_date)
+			ORDER BY DATE_TRUNC('month', order_date)
+- 30 Calculating revenue deltas as percentages
+	- Here’s the expression we want to calculate:
+	-** 100.0⋅ (total_revenue − previous_year_total_revenue) / previous_year_total_revenue**
+	- To avoid integer division we multiply the numerator by 100.0:
+		- 100.0 * ((SUM(amount) - LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date)))
+		- We round the percentage to two decimal places using the ROUND(value, 2) function.	
+
+				SELECT
+				  DATE_TRUNC('year', order_date) AS revenue_year, 
+				  SUM(amount) AS total_revenue,
+				  ROUND(
+				    100.0 *
+				    (SUM(amount) - LAG(SUM(amount), 1)
+				      OVER (ORDER BY DATE_TRUNC('year', order_date)))
+				      / (LAG(SUM(amount), 1) OVER (ORDER BY DATE_TRUNC('year', order_date))), ------------difference/prev value *100 rounded to 2 dgt
+				    2) AS delta_percentage
+				FROM orders
+				GROUP BY DATE_TRUNC('year', order_date)
+				ORDER BY DATE_TRUNC('year', order_date);
+				Here is the result:
+				
+				revenue_year	total_revenue	delta_percentage
+				2016-01-01 00:00:00+00	208083.99	NULL
+				2017-01-01 00:00:00+00	617085.35	196.56
+				2018-01-01 00:00:00+00	193637.42	-68.62
+
