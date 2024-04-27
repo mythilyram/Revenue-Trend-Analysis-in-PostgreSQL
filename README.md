@@ -77,12 +77,11 @@ Comparing revenue across different periods
 	-  Showing the total revenue for each year
 		- we'll compare revenue values between consecutive years, months, or any other time periods.
 		- Such reports are commonly called **year-to-year, quarter-to-quarter, and month-to-month** reports.
-		-
-  - 		SELECT
-  - 			DATE_TRUNC('year', order_date) AS revenue_year,
-  - 			SUM(amount) AS total_revenue
-  - 		FROM orders
-  - 		GROUP BY revenue_year
+		-SELECT
+ 			DATE_TRUNC('year', order_date) AS revenue_year,
+ 			SUM(amount) AS total_revenue
+ 		FROM orders
+ 		GROUP BY revenue_year
 ORDER BY revenue_year;
 
             
