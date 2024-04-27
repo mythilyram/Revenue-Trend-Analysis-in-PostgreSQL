@@ -1,6 +1,6 @@
 Part 2 
 
-In the previous part, we learned how to calculate the total revenue in a given period.
+19. In the previous part, we learned how to calculate the total revenue in a given period.
 Today, we're going to take a look at different ways to compare revenue values across different periods.
 
 In this part, we'll learn how to create three types of revenue reports.
@@ -36,8 +36,11 @@ Such reports can help us see seasonal trends in revenue values. For instance, Q4
 Are you ready to learn more about analyzing revenue trends?
 
 ------------------------------------------------------------------------------
-Showing the total revenue for each year
-First, let's see how our revenue has changed over time. To do so, we'll compare revenue values between consecutive years, months, or any other time periods. Such reports are commonly called year-to-year, quarter-to-quarter, and month-to-month reports. In SQL, we can use the DATE_TRUNC() function we've seen in Part 1 to create such reports. Take a look:
+20. Showing the total revenue for each year
+First, let's see how our revenue has changed over time. 
+To do so, we'll compare revenue values between consecutive years, months, or any other time periods. 
+Such reports are commonly called year-to-year, quarter-to-quarter, and month-to-month reports. 
+In SQL, we can use the DATE_TRUNC() function we've seen in Part 1 to create such reports. Take a look:
 
 SELECT
   DATE_TRUNC('year', order_date) AS revenue_year,
@@ -80,7 +83,7 @@ revenue_year	total_revenue_usa
 2023-01-01 00:00:00+00	24650.45
 2024-01-01 00:00:00+00	7024.87
 --------------------------------------------------------
-Showing total revenue for each month and quarter
+21 Showing total revenue for each month and quarter
 Good job! Now, let's say we want to compare revenue changes month by month. 
 We can pick a single year and show the revenue for each month. Check it out:
 
@@ -126,7 +129,7 @@ quarter_in_2017	total_revenue
 2017-07-01 00:00:00+00	153937.83
 2017-10-01 00:00:00+00	181681.50
 ----------------------------------------------------------------
-THe EXTRACT() function
+22 THe EXTRACT() function
 PostgreSQL offers one more function that you can use to see the revenue in each period. 
 Take a look:
 
@@ -257,8 +260,10 @@ revenue_year	revenue_month	total_revenue
 2021	6	1659.54
 2023	7	210.00
 --------------------------------------------------------------
-Showing total revenue on all aggregation levels – 1
-Very well done! Using the EXTRACT() function in PostgreSQL to generate revenue in period report is tricky, because you have to use it twice to tell apart years and months. However, there is one scenario when EXTRACT() is useful. Let’s say we want a report containing:
+24 Showing total revenue on all aggregation levels – 1
+Very well done! Using the EXTRACT() function in PostgreSQL to generate revenue in period report is tricky, 
+because you have to use it twice to tell apart years and months. However, there is one scenario when EXTRACT() is useful. 
+Let’s say we want a report containing:
 
 quarterly revenue values.
 annual revenue values.
@@ -339,7 +344,7 @@ the annual revenues – the sums for each year (revenue_quarter being NULL).
 the sums for each year and quarter (being the results of the query from the pevious exercise).
 
 --------------------------------------------===============================
-Showing total revenue on all aggregation levels – 2
+25 Showing total revenue on all aggregation levels – 2
 Excellent! As you saw, we used ROLLUP() in the GROUP BY clause:
 
 SELECT
@@ -476,8 +481,9 @@ revenue_year	revenue_month	total_revenue
 null	null	1265793.29
 
 =================================================================================
+Calculating Deltas
 ===================================================================================
-Showing total revenue for a previous period
+26 Showing total revenue for a previous period
 The next type of report we'd like to discuss calculates the revenue change between two periods. 
 Such reports can help us assess whether revenue increases or decreases over time, and to what extent. 
 We first need to learn how to show the revenue from the previous period for each row. Take a look:
@@ -530,7 +536,7 @@ calculation_month	avg_order_amount	previous_month_avg_order_amount
 2016-11-01 00:00:00+00	1824.0020000000000000	1442.9126923076923077
 2016-12-01 00:00:00+00	1459.3429032258064516	1824.0020000000000000
 
-Showing total revenue for previous period – exercise
+27 Showing total revenue for previous period – exercise
 Very good! It's time for an additional exercise.
 
 Exercise
@@ -556,7 +562,7 @@ order_year	order_count	previous_year_order_count
 2023-01-01 00:00:00+00	39	45
 2024-01-01 00:00:00+00	19	39
 ---------------------------------------------=========================================
-Calculating revenue deltas
+28 Calculating revenue deltas
 Good job! Now that we know how to calculate the revenue value for the previous period, 
 we can easily calculate the revenue change (delta) between two periods. Take a look:
 
@@ -615,7 +621,7 @@ revenue_quarter	total_revenue	delta
 2024-04-01 00:00:00+00	3078.66	-16539.67
 
 -----------------------------------------------------------------------------------------------
-Calculating revenue deltas – exercise
+29 Calculating revenue deltas – exercise
 Well done! Let's try another exercise.
 
 Exercise
@@ -648,7 +654,7 @@ revenue_month	total_revenue	delta
 2017-11-01 00:00:00+00	43533.81	-23215.43
 2017-12-01 00:00:00+00	71398.45	27864.64
 
-Calculating revenue deltas as percentages
+30 Calculating revenue deltas as percentages
 Awesome! We can also express the delta between two periods as a percentage. Look at the following query:
 
 SELECT
@@ -729,8 +735,8 @@ revenue_quarter	total_revenue	delta
 2023-10-01 00:00:00+00	11062.50	31.101
 2024-01-01 00:00:00+00	19618.33	77.341
 2024-04-01 00:00:00+00	3078.66	-84.307
-
-Calculating revenue deltas as percentages – exercise
+--------------------------------
+31 Calculating revenue deltas as percentages – exercise
 Very well done! Let's try one more exercise before we move on.
 
 Exercise
@@ -784,8 +790,9 @@ revenue_month	total_revenue	delta_percentage
 
 ==================================================================================
 Creating "revenue in quarters" reports
+==================================================================================
 
-Creating new columns with custom values
+32 Creating new columns with custom values
 There's one more report type we want to show you in this part: the revenue-in-quarters report. 
 First, however, we need to introduce a SQL construction you might not have heard about.
 Take a look:
@@ -934,7 +941,7 @@ order_id	amount	order_value
 
 
 -----------------------------------------------------------------------------------
-Creating columns with custom sums
+33 Creating columns with custom sums
 Perfect! Now, let's say we want to create two columns that show different order sums based on the ship_country column. 
 We can use the construction we've just learned, like so:
 
@@ -970,7 +977,7 @@ FROM orders
 sum_high_freight	sum_low_freight
 649633.80	616159.49
 -----------------------------------------------------------
-Creating a "revenue in quarters" report
+34 Creating a "revenue in quarters" report
 Very well done! We can now create a new report type. It should look like this:
 
 year	Q1	Q2	Q3	Q4
@@ -1032,7 +1039,7 @@ year	q1	q2	q3	q4
 2024-01-01 00:00:00+00	1107.7176923076923077	1382.7766666666666667	null	null
 
 ================================================================================
-Creating a "revenue in quarters" report – exercise
+35 Creating a "revenue in quarters" report – exercise
 Great job! It's now your turn to create a "revenue in quarters" report!
 
 Exercise
