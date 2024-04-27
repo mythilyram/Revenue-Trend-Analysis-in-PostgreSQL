@@ -34,7 +34,8 @@ Overview
             - '2018-01-01'::DATE + INTERVAL '3' month	
             - where order_date >= '2018-01-01'    and order_date <= '2018-01-01'::DATE + INTERVAL '3' month
 	    
-    - Calculating the beginning of the current period (e.g. the current day, month, year, etc.). This will help us create revenue reports for the current year, month, quarter, etc. 
+    - Calculating the beginning of the current period (e.g. the current day, month, year, etc.). 
+    This will help us create revenue reports for the current year, month, quarter, etc. 
 	    - In PostgreSQL there is a function named DATE_TRUNC(). 
         - SELECT DATE_TRUNC('month', CURRENT_TIMESTAMP) AS current_month_start;
             -  CURRENT_TIMESTAMP returns the current date and time.
@@ -53,7 +54,8 @@ Overview
         - year-to-date (YTD) – refers to the period beginning the first day of the current calendar year up to the current date.
         - month-to-date (MTD) – refers to the period of time between the 1st of the current month and the current date.
         - quarter-to-date (QTD) – refers to the period of time between the beginning of the current quarter and the current date.
-        - YTD, MTD, and QTD reports are used by business owners, investors, and individuals to analyze their revenue, income, business earnings, and investment returns for the current period of time.
+        - YTD, MTD, and QTD reports are used by business owners, investors, and individuals to analyze their revenue, income, 
+	business earnings, and investment returns for the current period of time.
             - For example, if we want to show the month-to-date revenue:
             - **WHERE order_date >= DATE_TRUNC('month', CURRENT_TIMESTAMP)**
 
@@ -66,4 +68,21 @@ Overview
     - To find rows for the current month, use:
     	- SELECT ... FROM ...
      	- WHERE column_name >= DATE_TRUNC('month', CURRENT_TIMESTAMP)
+
+=========================================================================
+Comparing revenue across different periods
+==========================================================================
+19. we'll talk about reports with total revenue for multiple periods of time - year 1, year 2, year 3.....Calculating Delta..,delta %
+20. Total revenue for multiple periods
+	-  Showing the total revenue for each year
+		- we'll compare revenue values between consecutive years, months, or any other time periods.
+		- Such reports are commonly called **year-to-year, quarter-to-quarter, and month-to-month** reports.
+		-
+  - 		SELECT
+  - 			DATE_TRUNC('year', order_date) AS revenue_year,
+  - 			SUM(amount) AS total_revenue
+  - 		FROM orders
+  - 		GROUP BY revenue_year
+ORDER BY revenue_year;
+
             
