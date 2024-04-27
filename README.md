@@ -85,5 +85,13 @@ Comparing revenue across different periods
  		FROM orders
  		GROUP BY revenue_year
 		ORDER BY revenue_year;
+  - Showing total revenue for each month and quarter
+  - 		Select
+  - 			DATE_TRUNC('month', order_date) AS month_in_2016,
+ 			SUM()
+		FROM
+  - 		WHERE order_date >= '2016-01-01'   AND order_date < '2017-01-01'
+  - 		GROUP BY month_in_2016
+  - 		ORDER BY month_in_2016
 
             
